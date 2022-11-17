@@ -1,7 +1,7 @@
 import yukiNftContract from "../../artifacts/contracts/yukiNFT.sol/yukiNFT.json" assert { type: "json" };
 
-const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-// const contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+// const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 // const contractAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
 // const contractAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";
 
@@ -29,14 +29,23 @@ $("#mintButton").click(async function () {
   await mint();
 });
 
+// mintButton
+$("#transferButton").click(async function () {
+  const from = web3.eth.defaultAccount;
+  const to = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0";
+  const tokenId = 1;
+  await approveAndTransfer(from, to, tokenId);
+});
+
 // fetchTotalSupply
-$("#fetchTotalSupply").click(async function () {
+$("#refreshButton").click(async function () {
   const totalSupply = await getTotalSupply();
   console.log(`totalSupply : ${totalSupply}`);
   $(".totalSupply").replaceWith(
     // "<ul class='list-group rounded-0'>" + todoHTMLItems + "</ul>"
     `<div class='totalSupply'>totalSupply : ${totalSupply}</div>`
   );
+  displayNFT();
 });
 
 // TODOリストの表示
@@ -83,6 +92,50 @@ function _updateDisplay(tokenIds, owners, jsonURLs) {
   $(".list-group").replaceWith(
     "<ul class='list-group rounded-0'>" + todoHTMLItems + "</ul>"
   );
+}
+
+// Approval
+// {
+//   "anonymous": false,
+//   "inputs": [
+//     {
+//       "indexed": true,
+//       "internalType": "address",
+//       "name": "owner",
+//       "type": "address"
+//     },
+//     {
+//       "indexed": true,
+//       "internalType": "address",
+//       "name": "approved",
+//       "type": "address"
+//     },
+//     {
+//       "indexed": true,
+//       "internalType": "uint256",
+//       "name": "tokenId",
+//       "type": "uint256"
+//     }
+//   ],
+//   "name": "Approval",
+//   "type": "event"
+// },
+
+async function approveAndTransfer(from, to, tokenId) {
+  await approve(to, tokenId);
+  await safeTransferFrom(from, to, tokenId);
+}
+
+async function approve(to, tokenId) {
+  return await contract.methods
+    .approve(to, tokenId)
+    .send({ from: web3.eth.defaultAccount });
+}
+
+async function safeTransferFrom(from, to, tokenId) {
+  return await contract.methods
+    .safeTransferFrom(from, to, tokenId)
+    .send({ from: web3.eth.defaultAccount });
 }
 
 async function getTokenURI(tokenId) {
